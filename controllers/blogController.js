@@ -45,3 +45,136 @@ export const createBlog = async (req, res) => {
     });
   }
 };
+
+export const getAllBlogs = async (req, res) => {
+  try{
+    const blogs = await Blog.find({}).populate("user").populate('comments').populate("likes").exec()
+    if(!blogs){
+      return res.status(404).json({
+        success:false,
+        msg: 'Blogs not Found'
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      blogs
+    })
+  }
+  catch(err){
+    return res.status(500).json({
+      success: false,
+      msg: "Error while fetching blogs"
+    })
+  }
+}
+
+export const getBlogsByUser = async (req, res) => {
+  try{
+    const { userId } = req.params;
+    const blogs = await Blog.find({user: userId}).populate("user").populate('comments').populate("likes").exec()
+    if(!blogs){
+      return res.status(404).json({
+        success:false,
+        msg: 'Blogs not Found'
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      blogs
+    })
+  }
+  catch(err){
+    return res.status(500).json({
+      success: false,
+      msg: "Error while fetching blogs"
+    })
+  }
+}
+
+export const getABlog = async (req, res) => {
+  try{
+    const {blogId} = req.params
+    const blog = await Blog.findById({_id: blogId}).populate('comments').populate('likes').populate('user').exec()
+    if(!blog){
+      return res.status(404).json({
+        success : false,
+        msg: "Blog not found"
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      msg: "Blog fetched successfully",
+      blog
+    })
+  }
+  catch(err){
+    console.log(err.message)
+    return res.status(401).json({
+      success: false,
+      msg: "Error while getting blog"
+    })
+  }
+}
+
+export const updateBlog = async (req, res) => {
+  try{
+    const {blogId, userId, blogTitle, blogContent, blogImg} = req.body;
+    const blog = await Blog.findById(blogId);
+    if(!blog){
+      return res.status(404).json({
+        success:false,
+        msg: 'Blog not Found'
+      })
+    }
+    if(blog.user !== userId){
+      return res.status(401).json({
+        success: false,
+        msg: "You are not authorized to update this blog"
+      })
+    }
+    const updatedBlog = await Blog.findByIdAndUpdate({_id: blogId}, {blogTitle, blogContent, blogImg}, {new: true})
+    return res.status(200).json({
+      success: true,
+      msg: "Blog Updated Successfully",
+      updatedBlog
+    })
+  }
+  catch(err){
+    return res.status(500).json({
+      success: false,
+      msg: "Error while updating blog"
+    })
+  }
+}
+
+export const deleteBlog = async (req, res) => {
+  try{
+    const {blogId, userId} = req.body
+    const blog = await Blog.findById({_id: blogId})
+    if(!blog){
+      return res.status(404).json({
+        success: false,
+        msg: "Blog not found"
+      })
+    }
+    if(blog.user !== userId){
+      return res.status(401).json({
+        success: false,
+        msg: "You are not authorized to delete this blog"
+      })
+    }
+    const deletedBlog = await Blog.findByIdAndDelete({_id: blogId})
+    return res.status(200).json({
+      success: true,
+      msg: "Blog Deleted Successfully",
+      deleteBlog
+    })
+  }
+  catch(err){
+    console.err(err.message)
+    return res.status(400).json({
+      success: false,
+      msg: "Error while deleting blog"
+    })
+  }
+}
