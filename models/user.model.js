@@ -37,9 +37,6 @@ const userSchema = new Schema({
         type : Schema.Types.ObjectId,
         ref : "Profile"
     },
-    image : {
-        type: String,
-    },
     role: {
         type: String,
         enum: ['user', 'admin']
