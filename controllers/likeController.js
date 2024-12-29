@@ -1,5 +1,5 @@
 import { Blog } from '../models/blog.model.js';
-import {Like} from '../models/likeModel.js';
+import {Like} from '../models/like.model.js';
 
 export const likeBlog = async (req, res) => {
     try{
@@ -67,6 +67,37 @@ export const dislikeBlog = async (req, res) => {
         return res.status(400).json({
             success: false,
             msg: 'Failed to dislike blog'
+        })
+    }
+}
+
+export const getAllLikes = async (req, res) => {
+    try {
+        const {blogId} = req.body
+        const blog = await Blog.findById(blogId)
+        if(!blog){
+            return res.status(404).json({
+                success: false,
+                msg: 'Blog not found'
+            })
+        }
+        const likes = await Like.find({blog: blogId}).populate('user').exec()
+        if(!likes){
+            return res.status(404).json({
+                success: false,
+                msg: 'Likes not found'
+            })
+        }
+        return res.status(200).json({
+            success: true,
+            likes
+        })
+        
+    } catch (error) {
+        console.log(error.message);
+        return res.status(402).json({
+            success: false,
+            msg: "Could not get the likes",
         })
     }
 }

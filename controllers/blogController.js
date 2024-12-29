@@ -1,9 +1,11 @@
-import { Blog } from "../models/blog.model";
-import { User } from "../models/user.model";
+import { Blog } from "../models/blog.model.js";
+import { User } from "../models/user.model.js";
+import { uploadImgCloud } from "../utils/imageUploader.js";
 
 export const createBlog = async (req, res) => {
   try {
-    const { blogTitle, blogImg, blogContent, user } = req.body;
+    const { blogTitle, blogContent, user } = req.body;
+    const blogImg = req.files.blogImg
     if (!blogTitle || !blogContent || user) {
       return res.status(402).json({
         success: false,
@@ -19,11 +21,12 @@ export const createBlog = async (req, res) => {
         msg: "User not found",
       });
     }
+    const blogImgUrl = await uploadImgCloud(blogImg, "InkSpire")
 
     const blog = await Blog.create({
       blogTitle,
       blogContent,
-      blogImg,
+      blogImg:blogImgUrl.secure_url,
       user,
     }).populate("user");
 
@@ -118,7 +121,8 @@ export const getABlog = async (req, res) => {
 
 export const updateBlog = async (req, res) => {
   try{
-    const {blogId, userId, blogTitle, blogContent, blogImg} = req.body;
+    const {blogId, userId, blogTitle, blogContent} = req.body;
+    const blogImg = req.files.blogImg
     const blog = await Blog.findById(blogId);
     if(!blog){
       return res.status(404).json({
@@ -132,7 +136,8 @@ export const updateBlog = async (req, res) => {
         msg: "You are not authorized to update this blog"
       })
     }
-    const updatedBlog = await Blog.findByIdAndUpdate({_id: blogId}, {blogTitle, blogContent, blogImg}, {new: true})
+    const blogImgUrl = await uploadImgCloud(blogImg, "InkSpire")
+    const updatedBlog = await Blog.findByIdAndUpdate({_id: blogId}, {blogTitle, blogContent, blogImg:blogImgUrl.secure_url}, {new: true})
     return res.status(200).json({
       success: true,
       msg: "Blog Updated Successfully",

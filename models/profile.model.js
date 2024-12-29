@@ -1,12 +1,9 @@
 import mongoose, {Schema} from "mongoose";
 
-const additionalDetailsSchema = new Schema({
+const profileSchema = new Schema({
     user : {
         type: Schema.Types.ObjectId,
         ref: "User"
-    },
-    profilePic : {
-        type: String,
     },
     bio : {
         type: String,
@@ -30,3 +27,5 @@ const additionalDetailsSchema = new Schema({
         },
     }
 },{timestamps: true});
+
+export const Profile = mongoose.model('Profile', profileSchema)

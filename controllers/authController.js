@@ -3,6 +3,7 @@ import { Otp } from "../models/otp.model.js";
 import { User } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import { uploadImgCloud } from "../utils/imageUploader.js";
 
 dotenv.config({
   path: "./env",
@@ -99,6 +100,7 @@ export const signUp = async (req, res) => {
       email,
       password: hashPass,
       role,
+      profilePic: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`,
     });
 
     return res.status(200).json({
@@ -165,3 +167,36 @@ export const logIn = async (req, res) => {
     });
   }
 };
+
+export const updateProfilePic = async (req, res) => {
+  try {
+    const profilePic = req.files.profilePic
+    const userId = req.user.id
+    if(!profilePic){
+      return res.status(400).json({
+        success: false,
+        message: "No File Found",
+      });
+    }
+    const user = await User.findById(userId)
+    if(!user){
+      return res.status(400).json({
+        success: false,
+        message: "User Not Found",
+      });
+    }
+    const profilePicUrl = await uploadImgCloud(profilePic, 'InkSpire')
+    const updatedProfile = await User.findByIdAndUpdate(userId, {profilePic: profilePicUrl.secure_url}, {new: true})
+    return res.status(200).json({
+      success: true,
+      message: "Profile Pic Updated Successfully",
+      data: updatedProfile
+    });  
+  } catch (error) {
+    console.log(error.message);
+    return res.status(402).json({
+      success: false,
+      message: "Error while updating Profile Pic",
+    });
+  }
+}

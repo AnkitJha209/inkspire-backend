@@ -33,6 +33,9 @@ const userSchema = new Schema({
             ref: 'Blog'
         }
     ],
+    profilePic: {
+        type: String,
+    },
     additionalDetails: {
         type : Schema.Types.ObjectId,
         ref : "Profile"
